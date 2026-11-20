@@ -1,0 +1,8 @@
+{
+  "name": "Remix NOVA MOTION AI",
+  "description": "Plateforme SaaS de génération vidéo, d\u0027images haute résolution et de productions cinématographiques par intelligence artificielle — NOVAHUB TECHNOLOGIES.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

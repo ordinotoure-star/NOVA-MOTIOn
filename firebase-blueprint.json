@@ -1,0 +1,617 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Authenticated NOVA MOTION AI studio user profile and plan governance record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "format": "email", "maxLength": 254 },
+        "fullName": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "role": {
+          "type": "string",
+          "enum": ["free", "basic", "plus", "pro", "annual_1", "annual_2", "admin", "super_admin"]
+        },
+        "planId": {
+          "type": "string",
+          "enum": ["free", "basic", "plus", "pro", "annual_1", "annual_2"]
+        },
+        "emailVerified": { "type": "boolean" },
+        "mfaEnabled": { "type": "boolean" },
+        "suspended": { "type": "boolean" },
+        "firstMonthDiscountUsed": { "type": "boolean" },
+        "language": { "type": "string", "enum": ["fr", "en"] },
+        "organization": { "type": "string", "maxLength": 160 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "lastLoginAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "email",
+        "fullName",
+        "role",
+        "planId",
+        "emailVerified",
+        "mfaEnabled",
+        "suspended",
+        "firstMonthDiscountUsed",
+        "language",
+        "organization",
+        "createdAt",
+        "updatedAt",
+        "lastLoginAt"
+      ]
+    },
+    "AdminEntry": {
+      "title": "AdminEntry",
+      "description": "Trusted RBAC registry mapping privileged Firebase UIDs to platform admin status.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "format": "email", "maxLength": 254 },
+        "role": { "type": "string", "enum": ["admin", "super_admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "Wallet": {
+      "title": "Wallet",
+      "description": "User credit wallet with reservation tracking and daily guardrail caps.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "balance": { "type": "number" },
+        "reserved": { "type": "number" },
+        "monthlySpent": { "type": "number" },
+        "dailyLimit": { "type": "number" },
+        "lowBalanceThreshold": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "balance",
+        "reserved",
+        "monthlySpent",
+        "dailyLimit",
+        "lowBalanceThreshold",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Immutable credit ledger record for grants, reservations, debits, refunds, and top-ups.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "type": {
+          "type": "string",
+          "enum": ["credit_grant", "reservation", "debit_confirm", "refund", "subscription_charge", "topup"]
+        },
+        "amount": { "type": "number" },
+        "balanceAfter": { "type": "number" },
+        "description": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "paymentMethod": { "type": "string", "maxLength": 64 },
+        "referenceId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "userId",
+        "type",
+        "amount",
+        "balanceAfter",
+        "description",
+        "paymentMethod",
+        "createdAt"
+      ]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "Subscription lifecycle record tying user to active tier and billing cycle.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "planId": {
+          "type": "string",
+          "enum": ["free", "basic", "plus", "pro", "annual_1", "annual_2"]
+        },
+        "billingCycle": { "type": "string", "enum": ["monthly", "yearly"] },
+        "paymentMethod": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["active", "superseded", "cancelled"] },
+        "renewsAt": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "userId",
+        "planId",
+        "billingCycle",
+        "paymentMethod",
+        "status",
+        "renewsAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AIModel": {
+      "title": "AIModel",
+      "description": "Platform AI engine configuration and operational telemetry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "provider": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "category": { "type": "string", "enum": ["video", "image", "audio", "music", "orchestrator"] },
+        "sdkModelId": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "isLiveConnected": { "type": "boolean" },
+        "requiresPaidKey": { "type": "boolean" },
+        "enabled": { "type": "boolean" },
+        "fallbackModelId": { "type": "string", "maxLength": 128 },
+        "maxDurationSeconds": { "type": "number" },
+        "nativeResolutions": { "type": "array" },
+        "supportsUpscaleTo4K": { "type": "boolean" },
+        "creditCostBase": { "type": "number" },
+        "creditCostPerSecond": { "type": "number" },
+        "avgLatencyMs": { "type": "number" },
+        "minPlanTier": {
+          "type": "string",
+          "enum": ["free", "basic", "plus", "pro", "annual_1", "annual_2"]
+        },
+        "descriptionFr": { "type": "string", "maxLength": 600 },
+        "descriptionEn": { "type": "string", "maxLength": 600 },
+        "totalCalls": { "type": "number" },
+        "failureCount": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "name",
+        "provider",
+        "category",
+        "sdkModelId",
+        "isLiveConnected",
+        "requiresPaidKey",
+        "enabled",
+        "maxDurationSeconds",
+        "nativeResolutions",
+        "supportsUpscaleTo4K",
+        "creditCostBase",
+        "creditCostPerSecond",
+        "avgLatencyMs",
+        "minPlanTier",
+        "descriptionFr",
+        "descriptionEn",
+        "updatedAt"
+      ]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Audiovisual film or campaign production workspace owned by a single user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "genre": { "type": "string", "maxLength": 100 },
+        "targetDurationMinutes": { "type": "number" },
+        "aspectRatio": { "type": "string", "maxLength": 24 },
+        "visualStyle": { "type": "string", "maxLength": 240 },
+        "status": { "type": "string", "enum": ["draft", "in_production", "archived", "completed"] },
+        "coherenceScoreText": { "type": "string", "maxLength": 300 },
+        "sceneCount": { "type": "number" },
+        "assetCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "description",
+        "genre",
+        "targetDurationMinutes",
+        "aspectRatio",
+        "visualStyle",
+        "status",
+        "coherenceScoreText",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Character": {
+      "title": "Character",
+      "description": "Cinema Bible character consistency sheet scoped under a parent project.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "projectId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "role": { "type": "string", "maxLength": 160 },
+        "physicalTraits": { "type": "string", "maxLength": 1000 },
+        "costume": { "type": "string", "maxLength": 1000 },
+        "voiceStyle": { "type": "string", "maxLength": 300 },
+        "imageAssetId": { "type": "string", "maxLength": 128 },
+        "imageUrl": { "type": "string", "maxLength": 1024 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "userId",
+        "name",
+        "role",
+        "physicalTraits",
+        "costume",
+        "voiceStyle",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Location": {
+      "title": "Location",
+      "description": "Cinema Bible environment & lighting continuity reference under a parent project.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "projectId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "atmosphere": { "type": "string", "maxLength": 1000 },
+        "lighting": { "type": "string", "maxLength": 500 },
+        "continuityNotes": { "type": "string", "maxLength": 1000 },
+        "imageAssetId": { "type": "string", "maxLength": 128 },
+        "imageUrl": { "type": "string", "maxLength": 1024 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "userId",
+        "name",
+        "atmosphere",
+        "lighting",
+        "continuityNotes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Scene": {
+      "title": "Scene",
+      "description": "Timeline shot/sequence capped at 15 seconds under a parent project.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "projectId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderIndex": { "type": "number" },
+        "chapterTitle": { "type": "string", "maxLength": 160 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "visualPrompt": { "type": "string", "maxLength": 4000 },
+        "dialogue": { "type": "string", "maxLength": 2000 },
+        "speakerName": { "type": "string", "maxLength": 120 },
+        "cameraMovement": { "type": "string", "maxLength": 160 },
+        "framing": { "type": "string", "maxLength": 160 },
+        "lightingMood": { "type": "string", "maxLength": 160 },
+        "durationSeconds": { "type": "number" },
+        "transitionType": { "type": "string", "enum": ["cut", "crossfade", "fade_black"] },
+        "subtitleText": { "type": "string", "maxLength": 2000 },
+        "videoAssetId": { "type": "string", "maxLength": 128 },
+        "videoUrl": { "type": "string", "maxLength": 1024 },
+        "audioAssetId": { "type": "string", "maxLength": 128 },
+        "audioUrl": { "type": "string", "maxLength": 1024 },
+        "keyframeUrl": { "type": "string", "maxLength": 1024 },
+        "status": { "type": "string", "enum": ["planned", "generating", "ready", "needs_revision"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "userId",
+        "orderIndex",
+        "chapterTitle",
+        "title",
+        "visualPrompt",
+        "dialogue",
+        "speakerName",
+        "cameraMovement",
+        "framing",
+        "lightingMood",
+        "durationSeconds",
+        "transitionType",
+        "subtitleText",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "FilmExport": {
+      "title": "FilmExport",
+      "description": "Assembled MP4 film master exported from project scenes via FFmpeg.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "projectId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "fileUrl": { "type": "string", "maxLength": 1024 },
+        "durationSeconds": { "type": "number" },
+        "resolution": { "type": "string", "maxLength": 32 },
+        "subtitlesIncluded": { "type": "boolean" },
+        "sceneCount": { "type": "number" },
+        "status": { "type": "string", "enum": ["processing", "ready", "failed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "userId",
+        "title",
+        "fileUrl",
+        "durationSeconds",
+        "resolution",
+        "subtitlesIncluded",
+        "sceneCount",
+        "status",
+        "createdAt"
+      ]
+    },
+    "MediaAsset": {
+      "title": "MediaAsset",
+      "description": "Generated, uploaded, upscaled, or exported media metadata record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "projectId": { "type": "string", "maxLength": 128 },
+        "kind": { "type": "string", "enum": ["video", "image", "audio", "film_export"] },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "prompt": { "type": "string", "maxLength": 4000 },
+        "fileUrl": { "type": "string", "maxLength": 1024 },
+        "thumbnailUrl": { "type": "string", "maxLength": 1024 },
+        "mimeType": { "type": "string", "maxLength": 120 },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "durationSeconds": { "type": "number" },
+        "nativeResolution": { "type": "string", "maxLength": 64 },
+        "outputResolution": { "type": "string", "maxLength": 64 },
+        "isUpscaled": { "type": "boolean" },
+        "modelId": { "type": "string", "maxLength": 128 },
+        "fileSizeBytes": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "userId",
+        "kind",
+        "title",
+        "prompt",
+        "fileUrl",
+        "mimeType",
+        "width",
+        "height",
+        "nativeResolution",
+        "outputResolution",
+        "isUpscaled",
+        "modelId",
+        "fileSizeBytes",
+        "createdAt"
+      ]
+    },
+    "GenerationJob": {
+      "title": "GenerationJob",
+      "description": "Tracked AI generation job with credit reservation and completion/refund status.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "projectId": { "type": "string", "maxLength": 128 },
+        "sceneId": { "type": "string", "maxLength": 128 },
+        "category": { "type": "string", "enum": ["video", "image", "audio", "music", "film_assembly"] },
+        "mode": { "type": "string", "maxLength": 64 },
+        "prompt": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "enhancedPrompt": { "type": "string", "maxLength": 4000 },
+        "modelId": { "type": "string", "maxLength": 128 },
+        "autoSelected": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "preparing", "generating", "verifying", "assembling", "completed", "failed", "cancelled"]
+        },
+        "progress": { "type": "number" },
+        "estimatedCredits": { "type": "number" },
+        "reservedCredits": { "type": "number" },
+        "chargedCredits": { "type": "number" },
+        "refundedCredits": { "type": "number" },
+        "errorMessage": { "type": "string", "maxLength": 2000 },
+        "outputAssetId": { "type": "string", "maxLength": 128 },
+        "outputUrl": { "type": "string", "maxLength": 1024 },
+        "metadata": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "userId",
+        "category",
+        "mode",
+        "prompt",
+        "modelId",
+        "autoSelected",
+        "status",
+        "progress",
+        "estimatedCredits",
+        "reservedCredits",
+        "chargedCredits",
+        "refundedCredits",
+        "metadata",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Studio real-time notification record scoped to a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "message": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "kind": { "type": "string", "enum": ["info", "success", "warning", "error"] },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "title", "message", "kind", "read", "createdAt", "updatedAt"]
+    },
+    "ApiKey": {
+      "title": "ApiKey",
+      "description": "Hashed user studio integration API key metadata.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "prefix": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "keyHash": { "type": "string", "minLength": 32, "maxLength": 128 },
+        "revoked": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "prefix", "keyHash", "revoked", "createdAt", "updatedAt"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "Customer support or billing inquiry ticket.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userEmail": { "type": "string", "format": "email", "maxLength": 254 },
+        "subject": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "category": { "type": "string", "enum": ["technical", "billing", "model_access", "abuse_report"] },
+        "message": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "status": { "type": "string", "enum": ["open", "in_review", "resolved"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userEmail", "subject", "category", "message", "status", "createdAt", "updatedAt"]
+    },
+    "ContentReport": {
+      "title": "ContentReport",
+      "description": "Moderation report flagged from library or studio views.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "reporterUserId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "assetId": { "type": "string", "maxLength": 128 },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "dismissed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "reporterUserId", "reason", "details", "status", "createdAt", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable security and governance audit trail event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorUserId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorEmail": { "type": "string", "format": "email", "maxLength": 254 },
+        "action": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "targetType": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "actorUserId", "actorEmail", "action", "targetType", "targetId", "details", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles isolated to owner or admin."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminEntry" },
+      "description": "Trusted admin role registry."
+    },
+    "/wallets/{userId}": {
+      "schema": { "$ref": "#/entities/Wallet" },
+      "description": "Per-user credit balance and reservation state."
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Append-only credit ledger entries."
+    },
+    "/subscriptions/{subscriptionId}": {
+      "schema": { "$ref": "#/entities/Subscription" },
+      "description": "User subscription tier records."
+    },
+    "/models/{modelId}": {
+      "schema": { "$ref": "#/entities/AIModel" },
+      "description": "Catalog of available AI engines and adapters."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Film and campaign studio projects."
+    },
+    "/projects/{projectId}/characters/{characterId}": {
+      "schema": { "$ref": "#/entities/Character" },
+      "description": "Cinema Bible characters scoped under a parent project."
+    },
+    "/projects/{projectId}/locations/{locationId}": {
+      "schema": { "$ref": "#/entities/Location" },
+      "description": "Cinema Bible locations scoped under a parent project."
+    },
+    "/projects/{projectId}/scenes/{sceneId}": {
+      "schema": { "$ref": "#/entities/Scene" },
+      "description": "Project timeline shots capped at 15 seconds each."
+    },
+    "/projects/{projectId}/exports/{exportId}": {
+      "schema": { "$ref": "#/entities/FilmExport" },
+      "description": "Finalized FFmpeg MP4 film exports."
+    },
+    "/mediaAssets/{assetId}": {
+      "schema": { "$ref": "#/entities/MediaAsset" },
+      "description": "Generated and uploaded media assets metadata."
+    },
+    "/generations/{jobId}": {
+      "schema": { "$ref": "#/entities/GenerationJob" },
+      "description": "Asynchronous generation job tracking records."
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "Per-user studio notifications."
+    },
+    "/apiKeys/{keyId}": {
+      "schema": { "$ref": "#/entities/ApiKey" },
+      "description": "Hashed studio API keys per user."
+    },
+    "/supportTickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/SupportTicket" },
+      "description": "Customer support tickets."
+    },
+    "/contentReports/{reportId}": {
+      "schema": { "$ref": "#/entities/ContentReport" },
+      "description": "Content moderation reports."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Security and governance audit logs."
+    }
+  }
+}
